@@ -400,11 +400,14 @@
         "https://n8n.fakduai.com/webhook-test/1694161b-6092-4277-ac51-1352837deb2e";
 
       function generateUUID() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          const r = Math.random() * 16 | 0;
-          const v = c === 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        });
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+          /[xy]/g,
+          function (c) {
+            const r = (Math.random() * 16) | 0;
+            const v = c === "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          }
+        );
       }
 
       function getWebhookUrl() {
@@ -426,12 +429,19 @@
         });
       }
 
+      function formatMessageContent(content) {
+        // แปลง literal "\n" string และ actual newline characters ให้เป็น <br> tags
+        // รองรับทั้ง \\n (escaped) และ \n (actual newline)
+        return content.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
+      }
+
       function addMessage(content, isUser = false, isError = false) {
         if (isFirstMessage) {
           chatContainer.innerHTML = "";
           isFirstMessage = false;
         }
 
+        const formattedContent = formatMessageContent(content);
         const messageDiv = document.createElement("div");
         messageDiv.className = `message ${isUser ? "user" : "bot"}`;
 
@@ -444,8 +454,8 @@
                 <div class="message-content">
                     ${
                       isError
-                        ? `<div class="error-message">${content}</div>`
-                        : content
+                        ? `<div class="error-message">${formattedContent}</div>`
+                        : formattedContent
                     }
                     <div class="message-time">${formatTime()}</div>
                 </div>
