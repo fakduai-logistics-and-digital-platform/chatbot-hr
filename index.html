@@ -396,8 +396,7 @@
     </div>
 
     <script>
-      const WEBHOOK_BASE_URL =
-        "https://n8n.fakduai.com/webhook-test/1694161b-6092-4277-ac51-1352837deb2e";
+      const WEBHOOK_BASE_URL = "https://n8n.fakduai.com/webhook/chat-hr";
 
       function generateUUID() {
         return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
@@ -430,9 +429,12 @@
       }
 
       function formatMessageContent(content) {
-        // แปลง literal "\n" string และ actual newline characters ให้เป็น <br> tags
-        // รองรับทั้ง \\n (escaped) และ \n (actual newline)
-        return content.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
+        // แปลง literal "\n", "/n" string และ actual newline characters ให้เป็น <br> tags
+        // รองรับทั้ง \\n (escaped), /n (forward slash), และ \n (actual newline)
+        return content
+          .replace(/\\n/g, "<br>")
+          .replace(/\/n/g, "<br>")
+          .replace(/\n/g, "<br>");
       }
 
       function addMessage(content, isUser = false, isError = false) {
@@ -446,20 +448,20 @@
         messageDiv.className = `message ${isUser ? "user" : "bot"}`;
 
         messageDiv.innerHTML = `
-                <div class="message-avatar">${
-                  isUser
-                    ? `<img src="https://api.dicebear.com/9.x/pixel-art/svg?seed=${userAvatarSeed}" alt="User" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">`
-                    : '<img src="logo.jpg" alt="HR Bot" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">'
-                }</div>
-                <div class="message-content">
-                    ${
-                      isError
-                        ? `<div class="error-message">${formattedContent}</div>`
-                        : formattedContent
-                    }
-                    <div class="message-time">${formatTime()}</div>
-                </div>
-            `;
+                      <div class="message-avatar">${
+                        isUser
+                          ? `<img src="https://api.dicebear.com/9.x/pixel-art/svg?seed=${userAvatarSeed}" alt="User" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">`
+                          : '<img src="logo.jpg" alt="HR Bot" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">'
+                      }</div>
+                      <div class="message-content">
+                          ${
+                            isError
+                              ? `<div class="error-message">${formattedContent}</div>`
+                              : formattedContent
+                          }
+                          <div class="message-time">${formatTime()}</div>
+                      </div>
+                  `;
 
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -470,15 +472,15 @@
         typingDiv.className = "message bot";
         typingDiv.id = "typingIndicator";
         typingDiv.innerHTML = `
-                <div class="message-avatar"><img src="logo.jpg" alt="HR Bot" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;"></div>
-                <div class="message-content">
-                    <div class="typing-indicator">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
-                </div>
-            `;
+                      <div class="message-avatar"><img src="logo.jpg" alt="HR Bot" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;"></div>
+                      <div class="message-content">
+                          <div class="typing-indicator">
+                              <div class="typing-dot"></div>
+                              <div class="typing-dot"></div>
+                              <div class="typing-dot"></div>
+                          </div>
+                      </div>
+                  `;
         chatContainer.appendChild(typingDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
       }
