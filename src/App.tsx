@@ -35,7 +35,7 @@ function getSavedMessages(): ChatMessage[] {
   const saved = localStorage.getItem('chatbot-hr-messages');
   if (!saved) return [];
   try {
-    return JSON.parse(saved) as ChatMessage[];
+    return (JSON.parse(saved) as ChatMessage[]).slice(-MAX_SAVED_MESSAGES);
   } catch {
     return [];
   }
@@ -125,6 +125,7 @@ export default function App() {
   const [messages, setMessages] = useState<ChatMessage[]>(getSavedMessages);
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile>(getSavedUserProfile);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
@@ -136,13 +137,17 @@ export default function App() {
   const sessionId = useMemo(generateUUID, []);
   const userAvatarSeed = useMemo(() => Math.random().toString(36).substring(7), []);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const historyMessages = useMemo(
+    () => messages.filter((chatMessage) => chatMessage.isUser && !chatMessage.isError).slice(-MAX_SAVED_MESSAGES).reverse(),
+    [messages],
+  );
 
   useEffect(() => {
     localStorage.setItem('chatbot-hr-user-profile', JSON.stringify(userProfile));
   }, [userProfile]);
 
   useEffect(() => {
-    localStorage.setItem('chatbot-hr-messages', JSON.stringify(messages));
+    localStorage.setItem('chatbot-hr-messages', JSON.stringify(messages.slice(-MAX_SAVED_MESSAGES)));
   }, [messages]);
 
   useEffect(() => {
@@ -160,6 +165,11 @@ export default function App() {
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
     });
+  };
+
+  const selectHistoryMessage = (content: string) => {
+    setMessage(content);
+    setIsHistoryOpen(false);
   };
 
   const handleProfileChange = (field: keyof UserProfile, value: string) => {
@@ -186,7 +196,7 @@ export default function App() {
         isError,
         time: formatTime(),
       },
-    ]);
+    ].slice(-MAX_SAVED_MESSAGES));
     scrollToBottom();
   };
 
@@ -438,6 +448,33 @@ export default function App() {
 
       <form className="input-area" onSubmit={handleSubmit}>
         <div className="input-wrapper">
+          <div className="history-menu">
+            <button
+              className="history-toggle"
+              type="button"
+              aria-label="เลือกข้อความจากประวัติ"
+              aria-expanded={isHistoryOpen}
+              onClick={() => setIsHistoryOpen((isOpen) => !isOpen)}
+              disabled={historyMessages.length === 0}
+            >
+              +
+            </button>
+            {isHistoryOpen ? (
+              <div className="history-dropdown" role="menu">
+                {historyMessages.map((historyMessage) => (
+                  <button
+                    key={historyMessage.id}
+                    type="button"
+                    role="menuitem"
+                    className="history-option"
+                    onClick={() => selectHistoryMessage(historyMessage.content)}
+                  >
+                    {historyMessage.content}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
           <div className="input-container">
             <textarea
               value={message}
