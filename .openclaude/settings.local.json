@@ -16,7 +16,12 @@
       "Bash(git -C \"$wt\" status --short)",
       "Bash(done)",
       "Bash(do git:*)",
-      "Bash(git worktree:*)"
+      "Bash(git worktree:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_screenshot"
     ]
   }
 }
