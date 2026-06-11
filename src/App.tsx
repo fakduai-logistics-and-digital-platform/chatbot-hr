@@ -23,6 +23,24 @@ const emptyUserProfile: UserProfile = {
   email: '',
 };
 
+const MAX_SAVED_MESSAGES = 30;
+
+const SUGGESTED_PROMPTS = [
+  'ขอลาพักร้อนต้องทำยังไง',
+  'สิทธิ์วันลาของฉันเหลือเท่าไหร่',
+  'เอกสาร HR ขอได้ที่ไหน',
+];
+
+function getSavedMessages(): ChatMessage[] {
+  const saved = localStorage.getItem('chatbot-hr-messages');
+  if (!saved) return [];
+  try {
+    return JSON.parse(saved) as ChatMessage[];
+  } catch {
+    return [];
+  }
+}
+
 function getSavedUserProfile(): UserProfile {
   const savedProfile = localStorage.getItem('chatbot-hr-user-profile');
   if (!savedProfile) return emptyUserProfile;
@@ -104,9 +122,10 @@ function MessageText({ content }: { content: string }) {
 }
 
 export default function App() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(getSavedMessages);
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile>(getSavedUserProfile);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const savedTheme = localStorage.getItem('chatbot-hr-theme');
@@ -123,9 +142,25 @@ export default function App() {
   }, [userProfile]);
 
   useEffect(() => {
+    localStorage.setItem('chatbot-hr-messages', JSON.stringify(messages));
+  }, [messages]);
+
+  useEffect(() => {
     document.documentElement.dataset.theme = themeMode;
     localStorage.setItem('chatbot-hr-theme', themeMode);
   }, [themeMode]);
+
+  const clearChat = () => {
+    setMessages([]);
+    localStorage.removeItem('chatbot-hr-messages');
+  };
+
+  const copyMessage = (id: string, content: string) => {
+    void navigator.clipboard.writeText(content).then(() => {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
 
   const handleProfileChange = (field: keyof UserProfile, value: string) => {
     setUserProfile((current) => ({
@@ -171,7 +206,15 @@ export default function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: trimmed,
+          message: (() => {
+            const parts = [
+              userProfile.firstName,
+              userProfile.lastName,
+              userProfile.nickname ? `(${userProfile.nickname})` : '',
+              userProfile.email,
+            ].filter(Boolean).join(' ');
+            return parts ? `${trimmed} [ผู้ใช้: ${parts}]` : trimmed;
+          })(),
           timestamp: new Date().toISOString(),
           user: userProfile,
         }),
@@ -228,6 +271,16 @@ export default function App() {
         </div>
 
         <div className="header-actions">
+          {messages.length > 0 && (
+            <button
+              type="button"
+              className="clear-btn"
+              onClick={clearChat}
+              aria-label="ล้างการสนทนา"
+            >
+              ล้างแชท
+            </button>
+          )}
           <a
             className="calendar-link"
             href={LEAVE_CALENDAR_URL}
@@ -312,9 +365,16 @@ export default function App() {
               </div>
               <p>สวัสดีครับ! พิมพ์ข้อความเพื่อเริ่มต้นใช้งาน</p>
               <div className="suggestion-row" aria-label="ตัวอย่างคำถาม">
-                <span>ถามเรื่องวันลา</span>
-                <span>สวัสดิการ</span>
-                <span>เอกสาร HR</span>
+                {SUGGESTED_PROMPTS.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    className="suggestion-chip"
+                    onClick={() => setMessage(prompt)}
+                  >
+                    {prompt}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -342,7 +402,19 @@ export default function App() {
                 ) : (
                   <MessageText content={chatMessage.content} />
                 )}
-                <div className="message-time">{chatMessage.time}</div>
+                <div className="message-footer">
+                  <span className="message-time">{chatMessage.time}</span>
+                  {!chatMessage.isUser && !chatMessage.isError && (
+                    <button
+                      type="button"
+                      className="copy-btn"
+                      onClick={() => copyMessage(chatMessage.id, chatMessage.content)}
+                      aria-label="คัดลอกข้อความ"
+                    >
+                      {copiedId === chatMessage.id ? 'คัดลอกแล้ว' : 'คัดลอก'}
+                    </button>
+                  )}
+                </div>
               </div>
             </article>
           ))

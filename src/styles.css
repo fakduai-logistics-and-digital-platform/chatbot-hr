@@ -729,7 +729,7 @@ textarea::placeholder {
   margin-top: 1rem;
 }
 
-.suggestion-row span {
+.suggestion-chip {
   color: var(--accent);
   background: var(--accent-soft);
   border: 1px solid var(--accent-border);
@@ -737,6 +737,45 @@ textarea::placeholder {
   padding: 0.32rem 0.62rem;
   font-size: 0.78rem;
   font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms, transform 100ms;
+}
+
+.suggestion-chip:hover {
+  background: var(--accent-border);
+}
+
+.suggestion-chip:active {
+  transform: scale(0.97);
+}
+
+.message-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 150ms, background 150ms;
+}
+
+.message-bubble:hover .copy-btn {
+  opacity: 1;
+}
+
+.copy-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .error-message {
