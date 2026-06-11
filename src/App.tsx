@@ -128,6 +128,10 @@ export default function App() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile>(getSavedUserProfile);
+  const [isProfileOpen, setIsProfileOpen] = useState(() => {
+    const savedProfile = getSavedUserProfile();
+    return !Object.values(savedProfile).some(Boolean);
+  });
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const savedTheme = localStorage.getItem('chatbot-hr-theme');
     return THEME_OPTIONS.some((option) => option.value === savedTheme)
@@ -206,6 +210,7 @@ export default function App() {
 
     addMessage(trimmed, true);
     setMessage('');
+    setIsHistoryOpen(false);
     setIsSending(true);
     scrollToBottom();
 
@@ -317,54 +322,61 @@ export default function App() {
       </header>
 
       <main className="chat-container" ref={chatContainerRef} aria-live="polite">
-        <section className="profile-card" aria-label="ข้อมูลผู้ใช้งาน">
-          <div className="profile-card-header">
+        <section className={`profile-card ${isProfileOpen ? 'open' : 'collapsed'}`} aria-label="ข้อมูลผู้ใช้งาน">
+          <button
+            type="button"
+            className="profile-card-header"
+            onClick={() => setIsProfileOpen((current) => !current)}
+            aria-expanded={isProfileOpen}
+          >
             <div>
               <p className="profile-eyebrow">ข้อมูลผู้ใช้งาน</p>
               <h2>บอกข้อมูลของคุณก่อนเริ่มแชท</h2>
             </div>
-            <span>เก็บไว้ในเบราว์เซอร์นี้</span>
-          </div>
+            <span>{isProfileOpen ? 'ยุบข้อมูล' : 'แก้ไขข้อมูล'}</span>
+          </button>
 
-          <div className="profile-grid">
-            <label>
-              <span>ชื่อ</span>
-              <input
-                value={userProfile.firstName}
-                onChange={(event) => handleProfileChange('firstName', event.target.value)}
-                autoComplete="given-name"
-                placeholder="ชื่อจริง"
-              />
-            </label>
-            <label>
-              <span>นามสกุล</span>
-              <input
-                value={userProfile.lastName}
-                onChange={(event) => handleProfileChange('lastName', event.target.value)}
-                autoComplete="family-name"
-                placeholder="นามสกุล"
-              />
-            </label>
-            <label>
-              <span>ชื่อเล่น</span>
-              <input
-                value={userProfile.nickname}
-                onChange={(event) => handleProfileChange('nickname', event.target.value)}
-                autoComplete="nickname"
-                placeholder="ชื่อเล่น"
-              />
-            </label>
-            <label>
-              <span>Email</span>
-              <input
-                type="email"
-                value={userProfile.email}
-                onChange={(event) => handleProfileChange('email', event.target.value)}
-                autoComplete="email"
-                placeholder="name@company.com"
-              />
-            </label>
-          </div>
+          {isProfileOpen && (
+            <div className="profile-grid">
+              <label>
+                <span>ชื่อ</span>
+                <input
+                  value={userProfile.firstName}
+                  onChange={(event) => handleProfileChange('firstName', event.target.value)}
+                  autoComplete="given-name"
+                  placeholder="ชื่อจริง"
+                />
+              </label>
+              <label>
+                <span>นามสกุล</span>
+                <input
+                  value={userProfile.lastName}
+                  onChange={(event) => handleProfileChange('lastName', event.target.value)}
+                  autoComplete="family-name"
+                  placeholder="นามสกุล"
+                />
+              </label>
+              <label>
+                <span>ชื่อเล่น</span>
+                <input
+                  value={userProfile.nickname}
+                  onChange={(event) => handleProfileChange('nickname', event.target.value)}
+                  autoComplete="nickname"
+                  placeholder="ชื่อเล่น"
+                />
+              </label>
+              <label>
+                <span>Email</span>
+                <input
+                  type="email"
+                  value={userProfile.email}
+                  onChange={(event) => handleProfileChange('email', event.target.value)}
+                  autoComplete="email"
+                  placeholder="name@company.com"
+                />
+              </label>
+            </div>
+          )}
         </section>
 
         {messages.length === 0 ? (
