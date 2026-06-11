@@ -25,6 +25,16 @@ const emptyUserProfile: UserProfile = {
 
 const MAX_SAVED_MESSAGES = 30;
 
+function getSavedHiddenPromptIds(): string[] {
+  const saved = localStorage.getItem('chatbot-hr-hidden-prompt-ids');
+  if (!saved) return [];
+  try {
+    return JSON.parse(saved) as string[];
+  } catch {
+    return [];
+  }
+}
+
 const SUGGESTED_PROMPTS = [
   'ขอลาพักร้อนต้องทำยังไง',
   'สิทธิ์วันลาของฉันเหลือเท่าไหร่',
@@ -127,6 +137,7 @@ export default function App() {
   const [isSending, setIsSending] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [hiddenPromptIds, setHiddenPromptIds] = useState<string[]>(getSavedHiddenPromptIds);
   const [userProfile, setUserProfile] = useState<UserProfile>(getSavedUserProfile);
   const [isProfileOpen, setIsProfileOpen] = useState(() => {
     const savedProfile = getSavedUserProfile();
@@ -142,13 +153,21 @@ export default function App() {
   const userAvatarSeed = useMemo(() => Math.random().toString(36).substring(7), []);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const historyMessages = useMemo(
-    () => messages.filter((chatMessage) => chatMessage.isUser && !chatMessage.isError).slice(-MAX_SAVED_MESSAGES).reverse(),
-    [messages],
+    () => messages.filter((chatMessage) => (
+      chatMessage.isUser
+      && !chatMessage.isError
+      && !hiddenPromptIds.includes(chatMessage.id)
+    )).slice(-MAX_SAVED_MESSAGES).reverse(),
+    [hiddenPromptIds, messages],
   );
 
   useEffect(() => {
     localStorage.setItem('chatbot-hr-user-profile', JSON.stringify(userProfile));
   }, [userProfile]);
+
+  useEffect(() => {
+    localStorage.setItem('chatbot-hr-hidden-prompt-ids', JSON.stringify(hiddenPromptIds));
+  }, [hiddenPromptIds]);
 
   useEffect(() => {
     localStorage.setItem('chatbot-hr-messages', JSON.stringify(messages.slice(-MAX_SAVED_MESSAGES)));
@@ -161,7 +180,9 @@ export default function App() {
 
   const clearChat = () => {
     setMessages([]);
+    setHiddenPromptIds([]);
     localStorage.removeItem('chatbot-hr-messages');
+    localStorage.removeItem('chatbot-hr-hidden-prompt-ids');
   };
 
   const copyMessage = (id: string, content: string) => {
@@ -169,6 +190,10 @@ export default function App() {
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
     });
+  };
+
+  const deletePromptFromHistory = (id: string) => {
+    setHiddenPromptIds((current) => [...current, id]);
   };
 
   const selectHistoryMessage = (content: string) => {
@@ -464,15 +489,24 @@ export default function App() {
             {isHistoryOpen && (historyMessages.length > 0 || messages.length > 0) ? (
               <div className="history-dropdown" role="menu">
                 {historyMessages.map((historyMessage) => (
-                  <button
-                    key={historyMessage.id}
-                    type="button"
-                    role="menuitem"
-                    className="history-option"
-                    onClick={() => selectHistoryMessage(historyMessage.content)}
-                  >
-                    {historyMessage.content}
-                  </button>
+                  <div className="history-bubble" key={historyMessage.id} role="none">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="history-option"
+                      onClick={() => selectHistoryMessage(historyMessage.content)}
+                    >
+                      {historyMessage.content}
+                    </button>
+                    <button
+                      type="button"
+                      className="history-delete"
+                      aria-label="ลบคำถามนี้จากประวัติ"
+                      onClick={() => deletePromptFromHistory(historyMessage.id)}
+                    >
+                      ×
+                    </button>
+                  </div>
                 ))}
                 {messages.length > 0 && (
                   <>

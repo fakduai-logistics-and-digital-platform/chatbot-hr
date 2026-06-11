@@ -711,6 +711,50 @@ button {
   white-space: nowrap;
 }
 
+.history-bubble {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 10px;
+}
+
+.history-bubble:hover {
+  background: var(--bg-tertiary);
+}
+
+.history-bubble .history-option:hover,
+.history-bubble .history-option:focus-visible {
+  background: transparent;
+}
+
+.history-delete {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.history-delete:hover,
+.history-delete:focus-visible {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  outline: none;
+}
+
+.history-delete:active {
+  transform: scale(0.95);
+}
+
 .history-option:hover,
 .history-option:focus-visible {
   background: var(--bg-tertiary);
