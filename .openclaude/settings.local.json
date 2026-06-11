@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(./node_modules/.bin/tsc -b --pretty false)",
+      "mcp__chrome-devtools__new_page",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__fill_form",
+      "mcp__chrome-devtools__press_key",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__fill",
+      "Bash(for wt:*)",
+      "Bash(do printf:*)",
+      "Bash(git -C \"$wt\" status --short)",
+      "Bash(done)",
+      "Bash(do git:*)",
+      "Bash(git worktree:*)"
+    ]
+  }
+}
