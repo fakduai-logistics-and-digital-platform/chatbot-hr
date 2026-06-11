@@ -286,16 +286,6 @@ export default function App() {
         </div>
 
         <div className="header-actions">
-          {messages.length > 0 && (
-            <button
-              type="button"
-              className="clear-btn"
-              onClick={clearChat}
-              aria-label="ล้างการสนทนา"
-            >
-              ล้างแชท
-            </button>
-          )}
           <a
             className="calendar-link"
             href={LEAVE_CALENDAR_URL}
@@ -467,11 +457,11 @@ export default function App() {
               aria-label="เลือกข้อความจากประวัติ"
               aria-expanded={isHistoryOpen}
               onClick={() => setIsHistoryOpen((isOpen) => !isOpen)}
-              disabled={historyMessages.length === 0}
+              disabled={historyMessages.length === 0 && messages.length === 0}
             >
               +
             </button>
-            {isHistoryOpen ? (
+            {isHistoryOpen && (historyMessages.length > 0 || messages.length > 0) ? (
               <div className="history-dropdown" role="menu">
                 {historyMessages.map((historyMessage) => (
                   <button
@@ -484,6 +474,19 @@ export default function App() {
                     {historyMessage.content}
                   </button>
                 ))}
+                {messages.length > 0 && (
+                  <>
+                    <div className="history-divider" />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="history-option danger"
+                      onClick={clearChat}
+                    >
+                      ล้างแชท
+                    </button>
+                  </>
+                )}
               </div>
             ) : null}
           </div>
